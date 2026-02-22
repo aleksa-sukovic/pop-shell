@@ -8,8 +8,6 @@ This is a personal fork of [pop-os/shell](https://github.com/pop-os/shell). It t
 - **Maximize with Gaps keybinding** (`Super+f`): Maximizes the focused window to fill the monitor while respecting outer gaps. Toggles between floating and tiled states when auto-tiling is active.
 - **Disable active hint border on floating windows**: New `config.json` option (`disable_active_border_on_float`) that suppresses the active hint border on windows matching float rules.
 
-All remaining customization (keybindings, gaps, hint color, float rules) is handled via dconf and `config.json` in the [itero](https://github.com/aleksa-sukovic/itero).
-
 ## Syncing with Upstream
 
 ```bash
