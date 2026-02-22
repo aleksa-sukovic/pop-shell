@@ -512,6 +512,7 @@ export class AutoTiler {
                 if (fork_entity) {
                     this.detach_window(ext, focused.entity);
                 }
+                ext.center_floating(focused);
             } else {
                 ext.add_tag(focused.entity, Tags.ForceTile);
                 this.auto_tile(ext, focused, false);
@@ -525,6 +526,7 @@ export class AutoTiler {
                 if (fork_entity) {
                     this.detach_window(ext, focused.entity);
                     ext.add_tag(focused.entity, Tags.Floating);
+                    ext.center_floating(focused);
                 }
             }
         }

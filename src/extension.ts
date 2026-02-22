@@ -755,6 +755,18 @@ export class Ext extends Ecs.System<ExtEvent> {
         return Rect.Rectangle.from_meta(meta as Rectangular);
     }
 
+    /** Centers a floating window on its current monitor's work area */
+    center_floating(win: Window.ShellWindow) {
+        const monitor = win.meta.get_monitor();
+        const work_area = this.monitor_work_area(monitor);
+        const rect = win.rect();
+
+        const x = work_area.x + Math.round((work_area.width - rect.width) / 2);
+        const y = work_area.y + Math.round((work_area.height - rect.height) / 2);
+
+        win.move(this, { x, y, width: rect.width, height: rect.height });
+    }
+
     monitor_area(monitor: number): Rectangle | null {
         const rect = global.display.get_monitor_geometry(monitor);
         return rect ? Rect.Rectangle.from_meta(rect as Rectangular) : null;
@@ -1717,6 +1729,8 @@ export class Ext extends Ecs.System<ExtEvent> {
 
             if (win.is_tilable(this)) {
                 this.connect_window(win);
+            } else if (this.auto_tiler && this.is_floating(win)) {
+                this.center_floating(win);
             }
         }
     }
