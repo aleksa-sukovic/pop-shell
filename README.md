@@ -14,7 +14,7 @@ This is a personal fork of [pop-os/shell](https://github.com/pop-os/shell). It t
 git remote add upstream https://github.com/pop-os/shell.git  # one-time setup
 git fetch upstream
 git merge upstream/master_noble
-git push origin master_noble
+git push origin master
 ```
 
 ---
