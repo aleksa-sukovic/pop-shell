@@ -275,7 +275,7 @@
 
         <!-- Custom keybindings -->
         <key type="as" name="open-settings">
-            <default><![CDATA[['<Super>comma']]]></default>
+            <default><![CDATA[['<Super>period']]]></default>
             <summary>Open pop-shell settings menu</summary>
         </key>
 
