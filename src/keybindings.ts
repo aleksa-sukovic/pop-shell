@@ -15,6 +15,15 @@ export class Keybindings {
         this.global = {
             'activate-launcher': () => ext.window_search.open(ext),
             'tile-enter': () => ext.tiler.enter(ext),
+            'open-settings': () => {
+                if (ext.button) {
+                    ext.button.visible = true;
+                    ext.button.menu.open();
+                    ext.button.menu.connect('open-state-changed', (_: any, open: boolean) => {
+                        if (!open) ext.button.visible = false;
+                    });
+                }
+            },
         };
 
         this.window_focus = {
@@ -59,6 +68,32 @@ export class Keybindings {
             'pop-workspace-up': () => ext.move_workspace(Meta.DisplayDirection.UP),
 
             'pop-workspace-down': () => ext.move_workspace(Meta.DisplayDirection.DOWN),
+
+            'maximize-with-gaps': () => {
+                const win = ext.focus_window();
+                if (!win) return;
+
+                // Toggle: if already floating, re-tile; otherwise detach and maximize
+                if (ext.auto_tiler && ext.is_floating(win)) {
+                    ext.auto_tiler.toggle_floating(ext);
+                    return;
+                }
+
+                // Detach from tiling if managed by auto-tiler
+                if (ext.auto_tiler && !ext.is_floating(win)) {
+                    ext.auto_tiler.toggle_floating(ext);
+                }
+
+                const monitor = win.meta.get_monitor();
+                const area = ext.monitor_work_area(monitor);
+
+                area.x += ext.gap_outer;
+                area.y += ext.gap_outer;
+                area.width -= ext.gap_outer * 2;
+                area.height -= ext.gap_outer * 2;
+
+                win.move(ext, area);
+            },
         };
     }
 

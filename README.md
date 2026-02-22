@@ -1,3 +1,26 @@
+# Pop Shell (Fork)
+
+This is a personal fork of [pop-os/shell](https://github.com/pop-os/shell). It tracks the `master_noble` branch from upstream. The fork exists to have a stable reference for [itero](https://github.com/aleksa-sukovic/itero) system provisioning, with a few tweaks.
+
+## Changes from Upstream
+
+- **Open Settings keybinding** (`Super+,`): Opens the pop-shell settings menu via keyboard. The panel indicator button is hidden by default and only appears while the menu is open.
+- **Maximize with Gaps keybinding** (`Super+f`): Maximizes the focused window to fill the monitor while respecting outer gaps. Toggles between floating and tiled states when auto-tiling is active.
+- **Disable active hint border on floating windows**: New `config.json` option (`disable_active_border_on_float`) that suppresses the active hint border on windows matching float rules.
+
+All remaining customization (keybindings, gaps, hint color, float rules) is handled via dconf and `config.json` in the [itero](https://github.com/aleksa-sukovic/itero).
+
+## Syncing with Upstream
+
+```bash
+git remote add upstream https://github.com/pop-os/shell.git  # one-time setup
+git fetch upstream
+git merge upstream/master_noble
+git push origin master_noble
+```
+
+---
+
 # Pop Shell
 
 Pop Shell is a keyboard-driven layer for GNOME Shell which allows for quick and sensible navigation and management of windows. The core feature of Pop Shell is the addition of advanced tiling window management — a feature that has been highly sought within our community. For many — ourselves included — i3wm has become the leading competitor to the GNOME desktop.
@@ -20,6 +43,7 @@ Therefore, we see an opportunity here to advance the usability of the GNOME desk
   - [Floating Mode](#floating-mode): Behaviors specific to the floating mode
   - [Tiling Mode](#tiling-mode): Behaviors specific to the auto-tiling mode
 - [Developers](#developers): Guide for getting started with development
+
 ---
 
 ## The Proposal
@@ -83,9 +107,9 @@ If you want to uninstall the extension, you may invoke `make uninstall`, and the
 - [Gentoo](https://packages.gentoo.org/packages/gnome-extra/gnome-shell-extension-pop-shell): `emerge gnome-shell-extension-pop-shell`
 - [openSUSE Tumbleweed](https://build.opensuse.org/package/show/openSUSE:Factory/gnome-shell-extension-pop-shell): `sudo zypper install gnome-shell-extension-pop-shell`
 - [Arch Linux](https://aur.archlinux.org/packages/?O=0&K=gnome-shell-extension-pop-shell) (Using Yay as AUR helper):
-    - `yay -S gnome-shell-extension-pop-shell`
-    - For precompiled binary version: `yay -S gnome-shell-extension-pop-shell-bin`
-    - For GitHub repository version: `yay -S gnome-shell-extension-pop-shell-git`
+  - `yay -S gnome-shell-extension-pop-shell`
+  - For precompiled binary version: `yay -S gnome-shell-extension-pop-shell-bin`
+  - For GitHub repository version: `yay -S gnome-shell-extension-pop-shell-git`
 
 ---
 
@@ -184,13 +208,16 @@ Disabled by default, this mode manages windows using a tree-based tiling window 
   - See [#customizing the window float list](#customizing-the-floating-window-list)
 
 ### Customizing the Floating Window List
+
 There is file `$XDG_CONFIG_HOME/pop-shell/config.json` where you can add the following structure:
+
 ```
 {
   class: "<WM_CLASS String from xprop>",
   title: "<Optional Window Title>"
 }
 ```
+
 For example, doing `xprop` on GNOME Settings (or GNOME Control Center), the WM_CLASS values are `gnome-control-center` and `Gnome-control-center`. Use the second value (Gnome-control-center), which pop-shell will read. The `title` field is optional.
 
 After applying changes in `config.json`, you can reload the tiling if it doesn't work the first time.

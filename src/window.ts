@@ -448,6 +448,15 @@ export class ShellWindow {
     show_border() {
         if (!this.border) return;
 
+        // Skip border for windows matching float rules when configured
+        if (this.ext.conf.disable_active_border_on_float) {
+            const wm_class = this.meta.get_wm_class();
+            const wm_title = this.meta.get_title();
+            if (wm_class && wm_title && this.ext.conf.window_shall_float(wm_class, wm_title)) {
+                return;
+            }
+        }
+
         this.restack();
         this.update_border_style();
         if (this.ext.settings.active_hint()) {

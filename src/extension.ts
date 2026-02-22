@@ -2712,6 +2712,7 @@ export default class PopShellExtension extends Extension {
         if (!indicator) {
             indicator = new PanelSettings.Indicator(ext);
             panel.addToStatusArea('pop-shell', indicator.button);
+            indicator.button.visible = false;  // Hidden, unless open pop-shell settings keybinding is pressed
         }
 
         ext.keybindings.enable(ext.keybindings.global).enable(ext.keybindings.window_focus);

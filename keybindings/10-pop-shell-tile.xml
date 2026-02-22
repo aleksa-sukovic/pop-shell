@@ -5,4 +5,5 @@
   <KeyListEntry name="toggle-tiling" description="Toggles auto-tiling"/>
   <KeyListEntry name="toggle-stacking" description="Toggle stacking mode inside management mode"/>
   <KeyListEntry name="toggle-stacking-global" description="Toggle stacking mode outside management mode"/>
+  <KeyListEntry name="maximize-with-gaps" description="Maximize window respecting gaps"/>
 </KeyListEntries>

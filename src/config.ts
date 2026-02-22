@@ -97,6 +97,9 @@ export class Config {
     /** Logs window details on focus of window */
     log_on_focus: boolean = false;
 
+    /** Disable active hint border on windows matching float rules */
+    disable_active_border_on_float: boolean = false;
+
     /** Add a floating exception which matches by wm_class */
     add_app_exception(wmclass: string) {
         for (const r of this.float) {
@@ -169,6 +172,7 @@ export class Config {
             let c = conf.value;
             this.float = c.float;
             this.log_on_focus = c.log_on_focus;
+            this.disable_active_border_on_float = c.disable_active_border_on_float;
         } else {
             log(`error loading conf: ${conf.why}`);
         }

@@ -273,6 +273,17 @@
             <summary>Move window to the rightward monitor</summary>
         </key>
 
+        <!-- Custom keybindings -->
+        <key type="as" name="open-settings">
+            <default><![CDATA[['<Super>comma']]]></default>
+            <summary>Open pop-shell settings menu</summary>
+        </key>
+
+        <key type="as" name="maximize-with-gaps">
+            <default><![CDATA[['<Super>f']]]></default>
+            <summary>Maximize focused window respecting gaps</summary>
+        </key>
+
         <key type="s" name="hint-color-rgba">
             <default>'rgba(251, 184, 108, 1)'</default>
             <summary>The current active-hint-color in RGBA</summary>
