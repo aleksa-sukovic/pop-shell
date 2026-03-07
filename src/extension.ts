@@ -1958,8 +1958,8 @@ export class Ext extends Ecs.System<ExtEvent> {
         });
 
         this.connect(sessionMode, 'updated', () => {
-            if (indicator) {
-                indicator.button.visible = !sessionMode.isLocked;
+            if (indicator && sessionMode.isLocked) {
+                indicator.button.visible = false;
             }
 
             if (sessionMode.isLocked) {
