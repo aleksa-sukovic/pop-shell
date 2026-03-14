@@ -7,6 +7,7 @@ This is a personal fork of [pop-os/shell](https://github.com/pop-os/shell). It t
 - **Open Settings keybinding** (`Super+,`): Opens the pop-shell settings menu via keyboard. The panel indicator button is hidden by default and only appears while the menu is open.
 - **Maximize with Gaps keybinding** (`Super+f`): Maximizes the focused window to fill the monitor while respecting outer gaps. Toggles between floating and tiled states when auto-tiling is active.
 - **Disable active hint border on floating windows**: New `config.json` option (`disable_active_border_on_float`) that suppresses the active hint border on windows matching float rules.
+- **Wayland-friendly reload command**: After `ITERO_COMPONENTS=gnome itero` or `make install`, run `make reload-extension` to reload the GNOME extension without logging out.
 
 ## Syncing with Upstream
 

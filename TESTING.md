@@ -32,7 +32,7 @@ Tasks for a tester to verify when approving a patch. Use complex window layouts 
 - [ ] Unmaximizing with keyboard (`Super` `M`) re-tiles into place
 - [ ] Maximizing with the mouse covers tiled windows
 - [ ] Unmaximizing with mouse re-tiles into place
-- [ ] Full-screening removes the active hint and full-screens on one display 
+- [ ] Full-screening removes the active hint and full-screens on one display
 - [ ] Unfull-screening adds the active hint and re-tiles into place
 - [ ] Maximizing a YouTube video fills the screen and unmaximizing retiles the browser in place
 - [ ] VIM shortcuts work as direction keys
@@ -69,6 +69,7 @@ Tasks for a tester to verify when approving a patch. Use complex window layouts 
 
 - [ ] Windows move across displays in adjustment mode with direction keys
 - [ ] Windows move across displays with the mouse
+- [ ] Windows moved to another monitor are automatically tiled on the destination monitor without manually toggling floating
 - [ ] Changing the primary display moves the top bar. Window heights adjust on all monitors for the new position.
 - [ ] Unplug a display - windows from the display retile on a new workspace on the remaining display
 - [ ] Plug an additional display into a laptop - windows and workspaces don't changes
@@ -89,9 +90,9 @@ Tasks for a tester to verify when approving a patch. Use complex window layouts 
 - [ ] : executes a command in sh
 - [ ] = calculates an equation
 - [ ] Search results are as expected:
-    - `cal` returns Calendar and Calculator before Color
-    - `pops` returns Popsicle first
-    - `shop` returns the Pop!_Shop first
+  - `cal` returns Calendar and Calculator before Color
+  - `pops` returns Popsicle first
+  - `shop` returns the Pop!\_Shop first
 
 ### Window Titles
 

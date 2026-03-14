@@ -359,7 +359,9 @@ export class Ext extends Ecs.System<ExtEvent> {
 
                     case WindowEvent.Size:
                         if (this.auto_tiler && !win.is_maximized() && !win.meta.is_fullscreen()) {
-                            this.auto_tiler.reflow(this, win.entity);
+                            if (!this.retile_on_window_location_change(win)) {
+                                this.auto_tiler.reflow(this, win.entity);
+                            }
                         }
                         break;
 
@@ -1739,26 +1741,38 @@ export class Ext extends Ecs.System<ExtEvent> {
         this.ignore_display_update = true;
     }
 
+    /** Reattach tiled windows after monitor/workspace changes outside extension-managed moves. */
+    retile_on_window_location_change(win: Window.ShellWindow): boolean {
+        if (!this.auto_tiler || this.contains_tag(win.entity, Tags.Floating)) {
+            return false;
+        }
+
+        const id = this.workspace_id(win);
+        const prev_id = this.monitors.get(win.entity);
+        if (prev_id && id[0] === prev_id[0] && id[1] === prev_id[1]) {
+            return false;
+        }
+
+        win.ignore_detach = true;
+        this.monitors.insert(win.entity, id);
+
+        if (win.is_tilable(this)) {
+            this.auto_tiler.detach_window(this, win.entity);
+            this.auto_tiler.attach_to_workspace(this, win, id);
+        }
+
+        if (win.meta.minimized) {
+            this.size_signals_block(win);
+            win.meta.unminimize();
+            this.size_signals_unblock(win);
+        }
+
+        return true;
+    }
+
     /** Handle workspace change events */
     on_workspace_changed(win: Window.ShellWindow) {
-        if (this.auto_tiler && !this.contains_tag(win.entity, Tags.Floating)) {
-            const id = this.workspace_id(win);
-            const prev_id = this.monitors.get(win.entity);
-            if (!prev_id || id[0] != prev_id[0] || id[1] != prev_id[1]) {
-                win.ignore_detach = true;
-                this.monitors.insert(win.entity, id);
-                if (win.is_tilable(this)) {
-                    this.auto_tiler.detach_window(this, win.entity);
-                    this.auto_tiler.attach_to_workspace(this, win, id);
-                }
-            }
-
-            if (win.meta.minimized) {
-                this.size_signals_block(win);
-                win.meta.unminimize();
-                this.size_signals_unblock(win);
-            }
-        }
+        this.retile_on_window_location_change(win);
     }
 
     on_workspace_index_changed(prev: number, next: number) {

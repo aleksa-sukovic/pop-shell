@@ -58,6 +58,12 @@ enable:
 disable:
 	gnome-extensions disable "pop-shell@system76.com"
 
+reload-extension:
+	@if gnome-extensions list --enabled | grep -Fx "$(UUID)" >/dev/null; then \
+		gnome-extensions disable "$(UUID)"; \
+	fi
+	gnome-extensions enable "$(UUID)"
+
 listen:
 	journalctl -o cat -n 0 -f "$$(which gnome-shell)" | grep -v warning
 
@@ -74,7 +80,7 @@ uninstall:
 restart-shell:
 	@echo "Restart shell!"
 ifneq ($(WAYLAND_DISPLAY),) # Don't restart if WAYLAND_DISPLAY is set
-	@echo "WAYLAND_DISPLAY is set, not restarting shell";
+	@echo "WAYLAND_DISPLAY is set, not restarting shell; run 'make reload-extension' after installing changes";
 else
 	if bash -c 'xprop -root &> /dev/null'; then \
 		pkill -HUP gnome-shell; \
