@@ -37,8 +37,8 @@ configure:
 compile: $(sources) clean
 	env PROJECTS="$(PROJECTS)" ./scripts/transpile.sh
 
-# Rebuild, install, reconfigure local settings, restart shell, and listen to journalctl logs
-debug: depcheck compile install configure enable restart-shell listen
+# Rebuild, install, reconfigure local settings, reload the extension, and listen to journalctl logs
+debug: depcheck compile install configure restart-shell listen
 
 depcheck:
 	@echo depcheck
@@ -59,15 +59,16 @@ disable:
 	gnome-extensions disable "pop-shell@system76.com"
 
 reload-extension:
+	@echo "Reloading GNOME Shell extension (Wayland)..."
 	@if gnome-extensions list --enabled | grep -Fx "$(UUID)" >/dev/null; then \
 		gnome-extensions disable "$(UUID)"; \
 	fi
-	gnome-extensions enable "$(UUID)"
+	@gnome-extensions enable "$(UUID)"
 
 listen:
 	journalctl -o cat -n 0 -f "$$(which gnome-shell)" | grep -v warning
 
-local-install: depcheck compile install configure restart-shell enable
+local-install: depcheck compile install configure restart-shell
 
 install:
 	rm -rf $(INSTALLBASE)/$(INSTALLNAME)
@@ -77,18 +78,7 @@ install:
 uninstall:
 	rm -rf $(INSTALLBASE)/$(INSTALLNAME)
 
-restart-shell:
-	@echo "Restart shell!"
-ifneq ($(WAYLAND_DISPLAY),) # Don't restart if WAYLAND_DISPLAY is set
-	@echo "WAYLAND_DISPLAY is set, not restarting shell; run 'make reload-extension' after installing changes";
-else
-	if bash -c 'xprop -root &> /dev/null'; then \
-		pkill -HUP gnome-shell; \
-	else \
-		gnome-session-quit --logout; \
-	fi
-	sleep 3
-endif
+restart-shell: reload-extension
 
 update-repository:
 	git fetch origin

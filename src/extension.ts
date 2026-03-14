@@ -1303,9 +1303,9 @@ export class Ext extends Ecs.System<ExtEvent> {
             } else {
                 this.workspace_window_move(win, prev_monitor, next_monitor[0]);
             }
-        }
 
-        win.activate_after_move = true;
+            win.activate_after_move = true;
+        }
     }
 
     /** Moves the focused window across workspaces and displays */

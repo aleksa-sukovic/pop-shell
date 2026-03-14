@@ -146,15 +146,13 @@ Activating this enables the following behaviors:
 
 - `<Direction>`
   - In default mode, this will move the displayed overlay around based on a grid
-  - In auto-tile mode, this will resize the window
+  - In auto-tile mode, this will move the window
 - `Shift` + `<Direction>`
-  - In default mode, this will resize the overlay
-  - In auto-tile mode, this will do nothing
+  - In default mode, this will resize the overlay in the given direction
+  - In auto-tile mode, this will resize the active window in the given direction
 - `Ctrl` + `<Direction>`
   - Selects a window in the given direction of the overlay
   - When `Return` is pressed, window positions will be swapped
-- `Shift` + `Ctrl` + `<Direction>`
-  - In auto-tile mode, this resizes in the opposite direction
 - `O`: Toggles between horizontal and vertical tiling in auto-tile mode
 - `~`: Toggles between floating and tiling in auto-tile mode
 - `Return`: Applies the changes that have been requested

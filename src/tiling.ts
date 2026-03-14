@@ -27,6 +27,8 @@ export enum Direction {
     Down,
 }
 
+type ResizeIncrement = [number, number, number, number];
+
 export class Tiler {
     private keybindings: Object;
 
@@ -81,6 +83,60 @@ export class Tiler {
         const rows = Math.floor(monitor.height / ext.row_size);
 
         return monitor_rect(monitor, columns, rows);
+    }
+
+    resize_increment(direction: Direction, column_step: number, row_step: number): [ResizeIncrement, ResizeIncrement] {
+        switch (direction) {
+            case Direction.Left:
+                return [
+                    [-column_step, 0, column_step, 0],
+                    [0, 0, -column_step, 0],
+                ];
+            case Direction.Right:
+                return [
+                    [0, 0, column_step, 0],
+                    [column_step, 0, -column_step, 0],
+                ];
+            case Direction.Up:
+                return [
+                    [0, -row_step, 0, row_step],
+                    [0, 0, 0, -row_step],
+                ];
+            case Direction.Down:
+                return [
+                    [0, 0, 0, row_step],
+                    [0, row_step, 0, -row_step],
+                ];
+        }
+    }
+
+    resize_has_tiled_neighbor(ext: Ext, window: window.ShellWindow, direction: Direction): boolean {
+        const neighbor = (() => {
+            switch (direction) {
+                case Direction.Left:
+                    return ext.focus_selector.left(ext, window);
+                case Direction.Up:
+                    return ext.focus_selector.up(ext, window);
+                case Direction.Right:
+                    return ext.focus_selector.right(ext, window);
+                case Direction.Down:
+                    return ext.focus_selector.down(ext, window);
+            }
+        })();
+
+        return !!neighbor && !!ext.auto_tiler?.attached.get(neighbor.entity) && !ext.contains_tag(neighbor.entity, Tags.Floating);
+    }
+
+    resize_overlay(ext: Ext, rect: Rectangle, direction: Direction) {
+        const [grow, shrink] = this.resize_increment(direction, 1, 1);
+        const before = new Rect.Rectangle([ext.overlay.x, ext.overlay.y, ext.overlay.width, ext.overlay.height]);
+
+        this.change(ext.overlay, rect, ...grow);
+        if (before.eq(ext.overlay)) {
+            this.change(ext.overlay, rect, ...shrink);
+        }
+
+        this.change(ext.overlay, rect, 0, 0, 0, 0);
     }
 
     change(overlay: Rectangular, rect: Rectangle, dx: number, dy: number, dw: number, dh: number): Tiler {
@@ -496,28 +552,14 @@ export class Tiler {
     }
 
     resize_auto(ext: Ext, direction: Direction) {
-        let mov1: [number, number, number, number], mov2: [number, number, number, number];
+        const column_step = 64;
+        const row_step = 64;
+        const [grow, shrink] = this.resize_increment(direction, column_step, row_step);
+        const window = this.window ? ext.windows.get(this.window) : null;
 
-        const hrow = 64;
-        const hcolumn = 64;
+        if (!window) return;
 
-        switch (direction) {
-            case Direction.Left:
-                mov1 = [hrow, 0, -hrow, 0];
-                mov2 = [0, 0, -hrow, 0];
-                break;
-            case Direction.Right:
-                mov1 = [0, 0, hrow, 0];
-                mov2 = [-hrow, 0, hrow, 0];
-                break;
-            case Direction.Up:
-                mov1 = [0, hcolumn, 0, -hcolumn];
-                mov2 = [0, 0, 0, -hcolumn];
-                break;
-            default:
-                mov1 = [0, 0, 0, hcolumn];
-                mov2 = [0, -hcolumn, 0, hcolumn];
-        }
+        const [mov1, mov2] = this.resize_has_tiled_neighbor(ext, window, direction) ? [grow, shrink] : [shrink, grow];
 
         this.move_auto_(ext, new Rect.Rectangle(mov1), new Rect.Rectangle(mov2), (work_area, crect, mov) => {
             crect.apply(mov);
@@ -668,26 +710,9 @@ export class Tiler {
         if (ext.auto_tiler && !ext.contains_tag(this.window, Tags.Floating)) {
             this.resize_auto(ext, direction);
         } else {
-            let array: [number, number, number, number];
-            switch (direction) {
-                case Direction.Down:
-                    array = [0, 0, 0, 1];
-                    break;
-                case Direction.Left:
-                    array = [0, 0, -1, 0];
-                    break;
-                case Direction.Up:
-                    array = [0, 0, 0, -1];
-                    break;
-                default:
-                    array = [0, 0, 1, 0];
-            }
-
-            const [x, y, w, h] = array;
-
             this.swap_window = null;
             this.rect_by_active_area(ext, (_monitor, rect) => {
-                this.change(ext.overlay, rect, x, y, w, h).change(ext.overlay, rect, 0, 0, 0, 0);
+                this.resize_overlay(ext, rect, direction);
             });
         }
 

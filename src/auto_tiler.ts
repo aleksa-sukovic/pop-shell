@@ -29,6 +29,15 @@ export class AutoTiler {
         this.attached = attached;
     }
 
+    private sync_workspace(ext: Ext, win: ShellWindow, id: [number, number]): [number, number] {
+        if (ext.should_ignore_workspace(id[0])) {
+            id = [id[0], 0];
+        }
+
+        ext.monitors.insert(win.entity, id);
+        return id;
+    }
+
     /** Swap window associations in the auto-tiler
      *
      * Call this when a window has swapped positions with another, so that we
@@ -120,6 +129,7 @@ export class AutoTiler {
 
     /** Attaches `win` to an optionally-given monitor */
     attach_to_monitor(ext: Ext, win: ShellWindow, workspace_id: [number, number], smart_gaps: boolean) {
+        workspace_id = this.sync_workspace(ext, win, workspace_id);
         let rect = ext.monitor_work_area(workspace_id[0]);
 
         if (!smart_gaps) {
@@ -148,26 +158,24 @@ export class AutoTiler {
         let attached = this.forest.attach_window(ext, attachee.entity, attacher.entity, move_by, stack_from_left);
 
         if (attached) {
+            const workspace_id = ext.monitors.get(attachee.entity) ?? ext.workspace_id(attachee);
+            this.sync_workspace(ext, attacher, [workspace_id[0], workspace_id[1]]);
+
             const [, fork] = attached;
-            const monitor = ext.monitors.get(attachee.entity);
-            if (monitor) {
-                if (fork.is_toplevel && fork.smart_gapped && fork.right) {
-                    fork.smart_gapped = false;
-                    let rect = ext.monitor_work_area(fork.monitor);
+            if (fork.is_toplevel && fork.smart_gapped && fork.right) {
+                fork.smart_gapped = false;
+                let rect = ext.monitor_work_area(fork.monitor);
 
-                    rect.x += ext.gap_outer;
-                    rect.y += ext.gap_outer;
-                    rect.width -= ext.gap_outer * 2;
-                    rect.height -= ext.gap_outer * 2;
+                rect.x += ext.gap_outer;
+                rect.y += ext.gap_outer;
+                rect.width -= ext.gap_outer * 2;
+                rect.height -= ext.gap_outer * 2;
 
-                    fork.set_area(rect);
-                }
-
-                this.tile(ext, fork, fork.area.clone());
-                return true;
-            } else {
-                log.error(`missing monitor association for Window(${attachee.entity})`);
+                fork.set_area(rect);
             }
+
+            this.tile(ext, fork, fork.area.clone());
+            return true;
         }
 
         return false;
@@ -175,9 +183,7 @@ export class AutoTiler {
 
     /** Tile a window onto a workspace */
     attach_to_workspace(ext: Ext, win: ShellWindow, id: [number, number]) {
-        if (ext.should_ignore_workspace(id[0])) {
-            id = [id[0], 0];
-        }
+        id = this.sync_workspace(ext, win, id);
 
         const toplevel = this.forest.find_toplevel(id);
 
