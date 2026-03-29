@@ -503,6 +503,11 @@ export class AutoTiler {
         const focused = ext.focus_window();
         if (!focused) return;
 
+        // Clear any maximize-toggle saved state
+        focused.maximized_by_toggle = false;
+        focused.saved_maximize = null;
+        focused.saved_rect = null;
+
         let wm_class = focused.meta.get_wm_class();
         let wm_title = focused.meta.get_title();
         let float_except = false;
