@@ -32,27 +32,18 @@ export class Indicator {
     constructor(ext: Ext) {
         this.button = new Button(0.0, _('Pop Shell Settings'));
 
-        const path = get_current_path();
         ext.button = this.button;
-        ext.button_gio_icon_auto_on = Gio.icon_new_for_string(`${path}/icons/pop-shell-auto-on-symbolic.svg`);
-        ext.button_gio_icon_auto_off = Gio.icon_new_for_string(`${path}/icons/pop-shell-auto-off-symbolic.svg`);
 
-        let button_icon_auto_on = new St.Icon({
-            gicon: ext.button_gio_icon_auto_on,
+        // Add icon so the button isn't an empty space when briefly shown
+        const path = get_current_path();
+        const icon = new St.Icon({
+            gicon: Gio.icon_new_for_string(`${path}/icons/pop-shell-auto-on-symbolic.svg`),
             style_class: 'system-status-icon',
         });
-        let button_icon_auto_off = new St.Icon({
-            gicon: ext.button_gio_icon_auto_off,
-            style_class: 'system-status-icon',
-        });
+        this.button.add_child(icon);
 
-        if (ext.settings.tile_by_default()) {
-            this.button.icon = button_icon_auto_on;
-        } else {
-            this.button.icon = button_icon_auto_off;
-        }
-
-        this.button.add_child(this.button.icon);
+        // Always hidden — only shown while settings menu is open via Super+.
+        this.button.visible = false;
 
         let bm = this.button.menu;
 

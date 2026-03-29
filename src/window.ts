@@ -76,6 +76,32 @@ export class ShellWindow {
 
     prev_rect: null | Rectangular = null;
 
+    /**
+     * Saved state for maximize/restore (Super+F). Captures the window's position
+     * in the fork tree so it can be precisely restored, regardless of nesting depth.
+     *
+     * Three restore cases:
+     *  1. fork_entity still exists → root fork survived, wrap current children in sub-fork
+     *  2. fork_entity destroyed + sibling was fork → insert between parent and sibling fork
+     *  3. fork_entity destroyed + sibling was window → attach_to_window beside sibling
+     */
+    saved_maximize: {
+        fork_entity: Entity;
+        was_left: boolean;
+        fork_orientation: lib.Orientation;
+        sibling_kind: 'window' | 'fork';
+        /** Window entity when sibling_kind='window', fork entity when sibling_kind='fork' */
+        sibling_entity: Entity;
+        /** Orientation of the sibling fork (only meaningful when sibling_kind='fork') */
+        sibling_fork_orientation: lib.Orientation | null;
+    } | null = null;
+
+    /** Saved geometry for maximize/restore in non-tiling mode */
+    saved_rect: null | Rectangle = null;
+
+    /** True if window was maximized via Super+F toggle */
+    maximized_by_toggle: boolean = false;
+
     window_app: any;
 
     private was_hidden: boolean = false;

@@ -69,6 +69,8 @@ const SHOW_SKIPTASKBAR = 'show-skip-taskbar';
 const MOUSE_CURSOR_FOLLOWS_ACTIVE_WINDOW = 'mouse-cursor-follows-active-window';
 const MOUSE_CURSOR_FOCUS_LOCATION = 'mouse-cursor-focus-location';
 const MAX_WINDOW_WIDTH = 'max-window-width';
+const FLOAT_DEFAULT_WIDTH_PERCENTAGE = 'float-default-width-percentage';
+const FLOAT_DEFAULT_HEIGHT_PERCENTAGE = 'float-default-height-percentage';
 
 export class ExtensionSettings {
     ext: Settings = settings_new_schema('org.gnome.shell.extensions.pop-shell');
@@ -178,6 +180,14 @@ export class ExtensionSettings {
         return this.ext.get_uint(MAX_WINDOW_WIDTH);
     }
 
+    float_default_width_percentage(): number {
+        return this.ext.get_uint(FLOAT_DEFAULT_WIDTH_PERCENTAGE);
+    }
+
+    float_default_height_percentage(): number {
+        return this.ext.get_uint(FLOAT_DEFAULT_HEIGHT_PERCENTAGE);
+    }
+
     // Setters
 
     set_active_hint(set: boolean) {
@@ -260,5 +270,13 @@ export class ExtensionSettings {
 
     set_max_window_width(set: number) {
         this.ext.set_uint(MAX_WINDOW_WIDTH, set);
+    }
+
+    set_float_default_width_percentage(set: number) {
+        this.ext.set_uint(FLOAT_DEFAULT_WIDTH_PERCENTAGE, set);
+    }
+
+    set_float_default_height_percentage(set: number) {
+        this.ext.set_uint(FLOAT_DEFAULT_HEIGHT_PERCENTAGE, set);
     }
 }

@@ -273,6 +273,27 @@
             <summary>Move window to the rightward monitor</summary>
         </key>
 
+        <!-- Mouse Warp Between Monitors -->
+        <key type="as" name="warp-mouse-left">
+            <default><![CDATA[['<Super><Control>h']]]></default>
+            <summary>Warp mouse cursor to the leftward monitor</summary>
+        </key>
+
+        <key type="as" name="warp-mouse-down">
+            <default><![CDATA[['<Super><Control>j']]]></default>
+            <summary>Warp mouse cursor to the lower monitor</summary>
+        </key>
+
+        <key type="as" name="warp-mouse-up">
+            <default><![CDATA[['<Super><Control>k']]]></default>
+            <summary>Warp mouse cursor to the upper monitor</summary>
+        </key>
+
+        <key type="as" name="warp-mouse-right">
+            <default><![CDATA[['<Super><Control>l']]]></default>
+            <summary>Warp mouse cursor to the rightward monitor</summary>
+        </key>
+
         <!-- Custom keybindings -->
         <key type="as" name="open-settings">
             <default><![CDATA[['<Super>period']]]></default>
@@ -282,6 +303,19 @@
         <key type="as" name="maximize-with-gaps">
             <default><![CDATA[['<Super>f']]]></default>
             <summary>Maximize focused window respecting gaps</summary>
+        </key>
+
+        <!-- Float Size Configuration -->
+        <key type="u" name="float-default-width-percentage">
+            <default>50</default>
+            <range min="10" max="100"/>
+            <summary>Default width (as % of screen) for windows toggled to floating</summary>
+        </key>
+
+        <key type="u" name="float-default-height-percentage">
+            <default>80</default>
+            <range min="10" max="100"/>
+            <summary>Default height (as % of screen) for windows toggled to floating</summary>
         </key>
 
         <key type="s" name="hint-color-rgba">

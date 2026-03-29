@@ -127,8 +127,6 @@ export class Ext extends Ecs.System<ExtEvent> {
     animate_windows: boolean = true;
 
     button: any = null;
-    button_gio_icon_auto_on: any = null;
-    button_gio_icon_auto_off: any = null;
 
     conf: Config.Config = new Config.Config();
 
@@ -757,16 +755,21 @@ export class Ext extends Ecs.System<ExtEvent> {
         return Rect.Rectangle.from_meta(meta as Rectangular);
     }
 
-    /** Centers a floating window on its current monitor's work area */
+    /** Centers a floating window on its current monitor's work area, resized to configured percentages */
     center_floating(win: Window.ShellWindow) {
         const monitor = win.meta.get_monitor();
         const work_area = this.monitor_work_area(monitor);
-        const rect = win.rect();
 
-        const x = work_area.x + Math.round((work_area.width - rect.width) / 2);
-        const y = work_area.y + Math.round((work_area.height - rect.height) / 2);
+        const width_pct = this.settings.float_default_width_percentage();
+        const height_pct = this.settings.float_default_height_percentage();
 
-        win.move(this, { x, y, width: rect.width, height: rect.height });
+        const width = Math.round(work_area.width * width_pct / 100);
+        const height = Math.round(work_area.height * height_pct / 100);
+
+        const x = work_area.x + Math.round((work_area.width - width) / 2);
+        const y = work_area.y + Math.round((work_area.height - height) / 2);
+
+        win.move(this, { x, y, width, height });
     }
 
     monitor_area(monitor: number): Rectangle | null {
@@ -1296,15 +1299,88 @@ export class Ext extends Ecs.System<ExtEvent> {
         const next_monitor = Tiling.locate_monitor(win, direction);
 
         if (next_monitor !== null) {
+            const target_id: [number, number] = [next_monitor[0], win.workspace_id()];
+
+            // Clear maximize-toggle state since we're moving monitors
+            win.maximized_by_toggle = false;
+            win.saved_maximize = null;
+            win.saved_rect = null;
+
             if (this.auto_tiler && !this.is_floating(win)) {
                 win.ignore_detach = true;
                 this.auto_tiler.detach_window(this, win.entity);
-                this.auto_tiler.attach_to_workspace(this, win, [next_monitor[0], win.workspace_id()]);
+                this.monitors.insert(win.entity, target_id);
+                this.auto_tiler.attach_to_workspace(this, win, target_id);
+
+                // Schedule a deferred retile to ensure window settles properly
+                const tiler = this.auto_tiler;
+                const entity = win.entity;
+                this.register_fn(() => {
+                    const fork_entity = tiler.attached.get(entity);
+                    if (fork_entity) {
+                        const fork = tiler.forest.forks.get(fork_entity);
+                        if (fork) tiler.tile(this, fork, fork.area);
+                    }
+                });
             } else {
                 this.workspace_window_move(win, prev_monitor, next_monitor[0]);
+                this.monitors.insert(win.entity, target_id);
             }
 
             win.activate_after_move = true;
+        }
+    }
+
+    /** Warps the mouse cursor to the center of an adjacent monitor */
+    warp_mouse_to_monitor(direction: Meta.DisplayDirection) {
+        const [pointer_x, pointer_y] = global.get_pointer();
+        const n_monitors = global.display.get_n_monitors();
+        const { UP, DOWN, LEFT } = Meta.DisplayDirection;
+
+        // Find which monitor the pointer is currently on
+        const cursor = Mtk ?
+            new Mtk.Rectangle({ x: pointer_x, y: pointer_y, width: 1, height: 1 }) :
+            new Meta.Rectangle({ x: pointer_x, y: pointer_y, width: 1, height: 1 });
+        const current_monitor = display.get_monitor_index_for_rect(cursor);
+        const current_area = global.display.get_monitor_geometry(current_monitor);
+
+        if (!current_area) return;
+
+        let exclude: (rect: Rectangular) => boolean;
+        let origin: [number, number];
+
+        if (direction === UP) {
+            origin = [current_area.x + current_area.width / 2, current_area.y];
+            exclude = (rect: Rectangular) => rect.y > current_area.y;
+        } else if (direction === DOWN) {
+            origin = [current_area.x + current_area.width / 2, current_area.y + current_area.height];
+            exclude = (rect: Rectangular) => rect.y < current_area.y;
+        } else if (direction === LEFT) {
+            origin = [current_area.x, current_area.y + current_area.height / 2];
+            exclude = (rect: Rectangular) => rect.x > current_area.x;
+        } else {
+            origin = [current_area.x + current_area.width, current_area.y + current_area.height / 2];
+            exclude = (rect: Rectangular) => rect.x < current_area.x;
+        }
+
+        let best: [number, number, Rectangular] | null = null;
+
+        for (let mon = 0; mon < n_monitors; mon++) {
+            if (mon === current_monitor) continue;
+            const geo = global.display.get_monitor_geometry(mon);
+            if (!geo || exclude(geo)) continue;
+
+            const weight = Geom.shortest_side(origin, geo);
+            if (best === null || best[1] > weight) {
+                best = [mon, weight, geo];
+            }
+        }
+
+        if (best) {
+            const target = best[2];
+            const cx = target.x + Math.round(target.width / 2);
+            const cy = target.y + Math.round(target.height / 2);
+            global.stage.get_context().get_backend().get_default_seat().warp_pointer(cx, cy);
         }
     }
 
@@ -1687,7 +1763,7 @@ export class Ext extends Ecs.System<ExtEvent> {
     on_show_window_titles() {
         const show_title = this.settings.show_title();
 
-        if (indicator) {
+        if (indicator?.toggle_titles) {
             indicator.toggle_titles.setToggleState(show_title);
         }
 
@@ -1972,10 +2048,6 @@ export class Ext extends Ecs.System<ExtEvent> {
         });
 
         this.connect(sessionMode, 'updated', () => {
-            if (indicator && sessionMode.isLocked) {
-                indicator.button.visible = false;
-            }
-
             if (sessionMode.isLocked) {
                 this.exit_modes();
             }
@@ -2252,8 +2324,6 @@ export class Ext extends Ecs.System<ExtEvent> {
 
             if (indicator) indicator.toggle_tiled.setToggleState(false);
 
-            this.button.icon.gicon = this.button_gio_icon_auto_off; // type: Gio.Icon
-
             if (this.settings.active_hint()) {
                 this.show_border_on_focused();
             }
@@ -2278,7 +2348,6 @@ export class Ext extends Ecs.System<ExtEvent> {
         this.auto_tiler = tiler;
 
         this.settings.set_tile_by_default(true);
-        this.button.icon.gicon = this.button_gio_icon_auto_on; // type: Gio.Icon
 
         for (const window of this.windows.values()) {
             if (window.is_tilable(this)) {
