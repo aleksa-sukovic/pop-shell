@@ -768,6 +768,8 @@ export class Forest extends Ecs.World {
         let is_left: boolean = child.left.is_fork(child_e),
             length: number;
 
+        let found = false;
+
         while (parent !== null) {
             child = this.forks.get(parent) as Fork.Fork;
             is_left = child.left.is_fork(child_e);
@@ -775,34 +777,46 @@ export class Forest extends Ecs.World {
             if (child.area.contains(crect)) {
                 if ((mov & UP) !== 0) {
                     if (shrunk) {
+                        if (child.is_horizontal()) { child_e = parent; parent = this.parents.get(child_e); continue; }
                         if (child.area.y + child.area.height > src_node.area.y + src_node.area.height) {
+                            found = true;
                             break;
                         }
                     } else if (!child.is_horizontal() || !is_left) {
+                        found = true;
                         break;
                     }
                 } else if ((mov & DOWN) !== 0) {
                     if (shrunk) {
+                        if (child.is_horizontal()) { child_e = parent; parent = this.parents.get(child_e); continue; }
                         if (child.area.y < src_node.area.y) {
+                            found = true;
                             break;
                         }
                     } else if (child.is_horizontal() || is_left) {
+                        found = true;
                         break;
                     }
                 } else if ((mov & LEFT) !== 0) {
                     if (shrunk) {
+                        if (!child.is_horizontal()) { child_e = parent; parent = this.parents.get(child_e); continue; }
                         if (child.area.x + child.area.width > src_node.area.x + src_node.area.width) {
+                            found = true;
                             break;
                         }
                     } else if (!child.is_horizontal() || !is_left) {
+                        found = true;
                         break;
                     }
                 } else if ((mov & RIGHT) !== 0) {
                     if (shrunk) {
+                        if (!child.is_horizontal()) { child_e = parent; parent = this.parents.get(child_e); continue; }
                         if (child.area.x < src_node.area.x) {
+                            found = true;
                             break;
                         }
                     } else if (!child.is_horizontal() || is_left) {
+                        found = true;
                         break;
                     }
                 }
@@ -810,6 +824,13 @@ export class Forest extends Ecs.World {
 
             child_e = parent;
             parent = this.parents.get(child_e);
+        }
+
+        if (!found) {
+            // No suitable parent fork found; re-measure without changing the ratio
+            const measure_target = src_node ?? child;
+            measure_target.measure(this, ext, measure_target.area, this.on_record());
+            return;
         }
 
         if (child.is_horizontal()) {
