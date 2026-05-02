@@ -188,6 +188,8 @@ export class ShellWindow {
             if (this.border) {
                 if (key === 'hint-color-rgba') {
                     this.update_hint_colors();
+                } else if (key === 'active-hint-border-radius') {
+                    this.update_border_style();
                 }
             }
             return false;
@@ -421,6 +423,8 @@ export class ShellWindow {
     private on_style_changed() {
         if (!this.border) return;
         this.border_size = this.border.get_theme_node().get_border_width(St.Side.TOP);
+        this.update_border_style();
+        this.update_border_layout();
     }
 
     rect(): Rectangle {
@@ -691,7 +695,7 @@ export class ShellWindow {
     update_border_style() {
         const { settings } = this.ext;
         const color_value = settings.hint_color_rgba();
-        const radius_value = settings.active_hint_border_radius();
+        const radius_value = settings.active_hint_border_radius() + this.border_size;
         if (this.border) {
             this.border.set_style(`border-color: ${color_value}; border-radius: ${radius_value}px;`);
         }
