@@ -174,6 +174,9 @@ export class ShellWindow {
                 this.meta.connect('notify::wm-class', () => {
                     this.wm_class_changed();
                 }),
+                this.meta.connect('notify::title', () => {
+                    this.title_changed();
+                }),
                 this.meta.connect('raised', () => {
                     this.window_raised();
                 }),
@@ -707,6 +710,24 @@ export class ShellWindow {
             if (!this.meta.minimized) {
                 this.ext.auto_tiler?.auto_tile(this.ext, this, this.ext.init);
             }
+        }
+    }
+
+    private title_changed() {
+        this.ext.show_border_on_focused();
+
+        const wm_class = this.meta.get_wm_class();
+        if (wm_class === null || this.ext.contains_tag(this.entity, Tags.ForceTile)) {
+            return;
+        }
+
+        if (!this.ext.conf.window_shall_float(wm_class, this.title())) {
+            return;
+        }
+
+        if (this.ext.auto_tiler?.attached.get(this.entity)) {
+            this.ext.auto_tiler.detach_window(this.ext, this.entity);
+            this.ext.center_floating(this);
         }
     }
 
