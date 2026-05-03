@@ -70,10 +70,11 @@ Tasks for a tester to verify when approving a patch. Use complex window layouts 
 - [ ] Windows move across displays in adjustment mode with direction keys
 - [ ] Windows move across displays with the mouse
 - [ ] Windows moved to another monitor are automatically tiled on the destination monitor without manually toggling floating
+- [ ] In a vertical monitor layout, up/down monitor moves only target the monitor above/below
+- [ ] In a vertical monitor layout, left/right monitor moves do not target the monitor above/below
 - [ ] Changing the primary display moves the top bar. Window heights adjust on all monitors for the new position.
 - [ ] Unplug a display - windows from the display retile on a new workspace on the remaining display
 - [ ] Plug an additional display into a laptop - windows and workspaces don't changes
-- [ ] NOTE: Add vertical monitor layout test
 
 ### Launcher
 

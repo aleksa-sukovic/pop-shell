@@ -874,22 +874,15 @@ export function locate_monitor(
     const { UP, DOWN, LEFT } = Meta.DisplayDirection;
 
     let origin: [number, number];
-    let exclude: (rect: Rectangular) => boolean;
 
     if (direction === UP) {
         origin = [ref.x + ref.width / 2, ref.y];
-        exclude = (rect: Rectangular) => {
-            return rect.y > ref.y;
-        };
     } else if (direction === DOWN) {
         origin = [ref.x + ref.width / 2, ref.y + ref.height];
-        exclude = (rect: Rectangular) => rect.y < ref.y;
     } else if (direction === LEFT) {
         origin = [ref.x, ref.y + ref.height / 2];
-        exclude = (rect: Rectangular) => rect.x > ref.x;
     } else {
         origin = [ref.x + ref.width, ref.y + ref.height / 2];
-        exclude = (rect: Rectangular) => rect.x < ref.x;
     }
 
     let next: [number, number, Rectangular] | null = null;
@@ -899,7 +892,7 @@ export function locate_monitor(
 
         const work_area = win.meta.get_work_area_for_monitor(mon);
 
-        if (!work_area || exclude(work_area)) continue;
+        if (!work_area || !is_monitor_in_direction(ref, work_area, direction)) continue;
 
         const weight = geom.shortest_side(origin, work_area);
 
@@ -909,6 +902,24 @@ export function locate_monitor(
     }
 
     return next ? [next[0], next[2]] : null;
+}
+
+function is_monitor_in_direction(ref: Rectangular, candidate: Rectangular, direction: Meta.DisplayDirection): boolean {
+    const { UP, DOWN, LEFT } = Meta.DisplayDirection;
+
+    if (direction === UP) {
+        return geom.yend(candidate) <= ref.y;
+    }
+
+    if (direction === DOWN) {
+        return candidate.y >= geom.yend(ref);
+    }
+
+    if (direction === LEFT) {
+        return geom.xend(candidate) <= ref.x;
+    }
+
+    return candidate.x >= geom.xend(ref);
 }
 
 function monitor_rect(monitor: Rectangle, columns: number, rows: number): Rectangle {
