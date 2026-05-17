@@ -68,7 +68,6 @@ const LOG_LEVEL = 'log-level';
 const SHOW_SKIPTASKBAR = 'show-skip-taskbar';
 const MOUSE_CURSOR_FOLLOWS_ACTIVE_WINDOW = 'mouse-cursor-follows-active-window';
 const MOUSE_CURSOR_FOCUS_LOCATION = 'mouse-cursor-focus-location';
-const MOUSE_CURSOR_FOLLOWS_ACTIVE_WORKSPACE = 'mouse-cursor-follows-active-workspace';
 const MAX_WINDOW_WIDTH = 'max-window-width';
 const FLOAT_DEFAULT_WIDTH_PERCENTAGE = 'float-default-width-percentage';
 const FLOAT_DEFAULT_HEIGHT_PERCENTAGE = 'float-default-height-percentage';
@@ -177,10 +176,6 @@ export class ExtensionSettings {
         return this.ext.get_uint(MOUSE_CURSOR_FOCUS_LOCATION);
     }
 
-    mouse_cursor_follows_active_workspace(): boolean {
-        return this.ext.get_boolean(MOUSE_CURSOR_FOLLOWS_ACTIVE_WORKSPACE);
-    }
-
     max_window_width(): number {
         return this.ext.get_uint(MAX_WINDOW_WIDTH);
     }
@@ -271,10 +266,6 @@ export class ExtensionSettings {
 
     set_mouse_cursor_focus_location(set: number) {
         this.ext.set_uint(MOUSE_CURSOR_FOCUS_LOCATION, set);
-    }
-
-    set_mouse_cursor_follows_active_workspace(set: boolean) {
-        this.ext.set_boolean(MOUSE_CURSOR_FOLLOWS_ACTIVE_WORKSPACE, set);
     }
 
     set_max_window_width(set: number) {

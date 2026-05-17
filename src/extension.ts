@@ -782,10 +782,6 @@ export class Ext extends Ecs.System<ExtEvent> {
             this.exit_modes();
             this.restack();
 
-            if (this.settings.mouse_cursor_follows_active_workspace()) {
-                this.warp_mouse_to_primary_monitor();
-            }
-
             const activate_window = (window: Window.ShellWindow) => {
                 this.on_focused(window);
                 window.activate(true);
@@ -1336,7 +1332,25 @@ export class Ext extends Ecs.System<ExtEvent> {
         }
     }
 
-    /** Warps the mouse cursor to the center of an adjacent monitor */
+    tiled_monitor_origin(monitor: number): [number, number] {
+        const area = this.monitor_work_area(monitor);
+
+        if (!this.settings.smart_gaps()) {
+            area.x += this.gap_outer;
+            area.y += this.gap_outer;
+            area.width -= this.gap_outer * 2;
+            area.height -= this.gap_outer * 2;
+        }
+
+        const max_width = this.settings.max_window_width();
+        if (max_width > 0 && area.width > max_width) {
+            area.x += Math.round((area.width - max_width) / 2);
+        }
+
+        return [area.x, area.y];
+    }
+
+    /** Warps the mouse cursor to the tiled origin of an adjacent monitor */
     warp_mouse_to_monitor(direction: Meta.DisplayDirection) {
         const [pointer_x, pointer_y] = global.get_pointer();
         const n_monitors = global.display.get_n_monitors();
@@ -1382,30 +1396,9 @@ export class Ext extends Ecs.System<ExtEvent> {
         }
 
         if (best) {
-            const target = best[2];
-            const cx = target.x + Math.round(target.width / 2);
-            const cy = target.y + Math.round(target.height / 2);
-            global.stage.get_context().get_backend().get_default_seat().warp_pointer(cx, cy);
+            const [x, y] = this.tiled_monitor_origin(best[0]);
+            global.stage.get_context().get_backend().get_default_seat().warp_pointer(x, y);
         }
-    }
-
-    /** Warps the mouse cursor to the center of the primary monitor */
-    warp_mouse_to_primary_monitor() {
-        const [pointer_x, pointer_y] = global.get_pointer();
-        const primary = display.get_primary_monitor();
-        const cursor = Mtk ?
-            new Mtk.Rectangle({ x: pointer_x, y: pointer_y, width: 1, height: 1 }) :
-            new Meta.Rectangle({ x: pointer_x, y: pointer_y, width: 1, height: 1 });
-        const current_monitor = display.get_monitor_index_for_rect(cursor);
-
-        if (current_monitor === primary) return;
-
-        const geo = display.get_monitor_geometry(primary);
-        if (!geo) return;
-
-        const cx = geo.x + Math.round(geo.width / 2);
-        const cy = geo.y + Math.round(geo.height / 2);
-        global.stage.get_context().get_backend().get_default_seat().warp_pointer(cx, cy);
     }
 
     /** Moves the focused window across workspaces and displays */
